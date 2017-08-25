@@ -1,5 +1,9 @@
-exception ParsingError;
 let sprintf = Printf.sprintf;
+
+exception ParsingError;
+exception NotYetSupported;
+exception MalformedType string string;
+let raise_malformed_type type_ => raise (MalformedType type_ (sprintf "The type \"%s\" is malformed" type_));
 
 module Lexer = {
   type lexer = {
@@ -118,7 +122,7 @@ module Parser = {
   };
 
   let parse_or_fail str => switch (parse str) {
-    | None => failwith "Error parsing"
+    | None => raise ParsingError
     | Some node => node
   };
 };
@@ -131,7 +135,7 @@ let scalar_to_reason str => switch str {
   | "Boolean" | "boolean" | "Bool" | "bool" => "bool"
   | "ID" | "Id" | "id" => "string"
   | "NullableBoolean" => "bool"
-  | _ => failwith (sprintf "The type \"%s\" not exist in reason" str)
+  | _ => raise NotYetSupported
 };
 
 let to_reason_type initial_optional::initial_optional=false scalar_to_reason str => {
@@ -142,7 +146,7 @@ let to_reason_type initial_optional::initial_optional=false scalar_to_reason str
   };
 
   switch (initial_optional, Parser.parse str) {
-    | (_, None) => failwith (Printf.sprintf "The type \"%s\" is malformed" str)
+    | (_, None) => raise_malformed_type str
     | (false, Some node) => _to_reason_type node
     | (true, Some (Optional node)) => _to_reason_type (Optional node)
     | (true, Some node) => _to_reason_type (Optional node)
@@ -202,11 +206,11 @@ let to_converter initial_optional::initial_optional=false ::initial_mapper ::fie
       let mapper = is_bool str ? bool_mapper : initial_mapper;
       apply_mapper field (mapper_option (mapper_list (mapper_option mapper)));
     }
-    | _ => failwith "Pas encore pris en charge"
+    | _ => raise NotYetSupported
   };
 
   switch (initial_optional, Parser.parse type_) {
-    | (_, None) => failwith (Printf.sprintf "The type \"%s\" is malformed" type_)
+    | (_, None) => raise_malformed_type type_
     | (false, Some node) => _to_converter node
     | (true, Some (Optional node)) => _to_converter (Optional node)
     | (true, Some node) => _to_converter (Optional node)
@@ -222,11 +226,11 @@ let to_js_converter ::field ::type_ => {
   | Some b => Some (b |> Js.Boolean.to_js_boolean) |> Js.Null.from_opt
 }" field
     | Optional (Scalar _) => sprintf "(%s) |> Js.Null.from_opt" field
-    | _ => failwith "Pas encore pris en charge"
+    | _ => raise NotYetSupported
   };
 
   switch (Parser.parse type_) {
-    | None => failwith (Printf.sprintf "The type \"%s\" is malformed" type_)
+    | None => raise_malformed_type type_
     | Some node => _to_js_converter node
   };
 };

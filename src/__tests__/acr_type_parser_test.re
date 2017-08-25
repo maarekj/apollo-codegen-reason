@@ -80,8 +80,8 @@ describe "to_reason_type" (fun () => {
     test "[[String]]" (fun _ => expect (trt "[[String]]") == "option (list (option (list (option (string)))))");
     test "[[String!]!]!" (fun _ => expect (trt "[[String!]!]!") == "list (list (string))");
 
-    test "fail with an unkown type" (fun _ => expect (fun _ => {let _ = trt "[Unknown]"; ()}) |> toThrowMessage "The type \"Unknown\" not exist in reason");
-    test "fail with an unkown type" (fun _ => expect (fun _ => {let _ = trt "Unknown"; ()}) |> toThrowMessage "The type \"Unknown\" not exist in reason");
+    test "fail with an unknown type" (fun _ => expect (fun _ => {let _ = trt "[Unknown]"; ()}) |> toThrowMessage "NotYetSupported");
+    test "fail with an unknown type" (fun _ => expect (fun _ => {let _ = trt "Unknown"; ()}) |> toThrowMessage "NotYetSupported");
     test "fail with an malformed type" (fun _ => expect (fun _ => {let _ = trt "[String"; ()}) |> toThrowMessage "The type \"[String\" is malformed");
     test "fail with an malformed type" (fun _ => expect (fun _ => {let _ = trt "!String"; ()}) |> toThrowMessage "The type \"!String\" is malformed");
   });
