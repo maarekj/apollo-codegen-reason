@@ -2,13 +2,15 @@
   "name": "apollo-codegen-reason",
   "version": "0.0.1",
   "description": "",
-  "main": "lib/js/cli.js",
+  "main": "/lib/js/src/acr_cli.js",
+  "bin":  "/lib/js/src/acr_cli.js",
   "scripts": {
     "start": "bsb -make-world -w",
     "build": "bsb -make-world",
     "clean": "bsb -clean-world",
     "test": "jest lib/js/src",
-    "test:watch": "jest lib/js/src --watchAll"
+    "test:watch": "jest lib/js/src --watchAll",
+    "preinstall": "npm run build"
   },
   "keywords": [],
   "author": "",
