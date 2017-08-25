@@ -2,15 +2,16 @@
   "name": "apollo-codegen-reason",
   "version": "0.0.1",
   "description": "",
-  "main": "/lib/js/src/acr_cli.js",
-  "bin":  "/lib/js/src/acr_cli.js",
+  "main": "lib/output/cli.js",
+  "bin": "lib/output/cli.js",
   "scripts": {
     "start": "bsb -make-world -w",
-    "build": "bsb -make-world",
-    "clean": "bsb -clean-world",
+    "start-webpack": "webpack -w",
+    "webpack": "webpack",
+    "build": "bsb -make-world && webpack",
+    "clean": "bsb -clean-world && rm -Rvf lib/output",
     "test": "jest lib/js/src",
-    "test:watch": "jest lib/js/src --watchAll",
-    "preinstall": "npm run build"
+    "test:watch": "jest lib/js/src --watchAll"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "bs-jest": "^0.1.0",
-    "bs-platform": "^1.8.2"
+    "bs-platform": "^1.8.2",
+    "webpack": "^3.5.5"
   }
 }

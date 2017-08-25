@@ -1,7 +1,6 @@
 .merlin
 /node_modules/
-/lib/*
-!/lib/js/*
-/bundledOutputs/
+/lib/bs
+/lib/js
 npm-debug.log
 .DS_Store
