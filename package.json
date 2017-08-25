@@ -1,0 +1,23 @@
+{
+  "name": "apollo-codegen-reason",
+  "version": "0.0.1",
+  "description": "",
+  "main": "lib/js/cli.js",
+  "scripts": {
+    "start": "bsb -make-world -w",
+    "build": "bsb -make-world",
+    "clean": "bsb -clean-world",
+    "test": "jest lib/js/src",
+    "test:watch": "jest lib/js/src --watchAll"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "apollo-codegen": "^0.16.5"
+  },
+  "devDependencies": {
+    "bs-jest": "^0.1.0",
+    "bs-platform": "^1.8.2"
+  }
+}

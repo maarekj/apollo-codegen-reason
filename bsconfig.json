@@ -1,0 +1,10 @@
+{
+  "name" : "apollo-codegen-reason",
+  "reason" : {"react-jsx" : 2},
+  "bs-dependencies": ["bs-jest"],
+  "bsc-flags": ["-bs-no-version-header"],
+  "sources": [
+    "src",
+    "src/__tests__"
+  ]
+}
