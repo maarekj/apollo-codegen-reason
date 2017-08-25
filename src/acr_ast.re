@@ -1,46 +1,33 @@
 type type_ = {
   kind: string,
   name: string,
-  description: string,
+  description: string
 };
 
-let to_type data => {
-  kind: data##kind,
-  name: data##name,
-  description: data##description,
-};
+let to_type data => {kind: data##kind, name: data##name, description: data##description};
 
 type fragment;
 
 type variable = {
   name: string,
-  type_: string,
+  type_: string
 };
 
-let to_variable data => {
-  name: data##name,
-  type_: data##_type,
-};
+let to_variable data => {name: data##name, type_: data##_type};
 
 type arg_value = {
   kind: string,
-  variableName: string,
+  variableName: string
 };
 
-let to_arg_value data => {
-  kind: data##kind,
-  variableName: data##variableName,
-};
+let to_arg_value data => {kind: data##kind, variableName: data##variableName};
 
 type arg = {
   name: string,
-  value: arg_value,
+  value: arg_value
 };
 
-let to_arg data => {
-  name: data##name,
-  value: to_arg_value data##value,
-};
+let to_arg data => {name: data##name, value: to_arg_value data##value};
 
 type field = {
   response_name: string,
@@ -49,7 +36,7 @@ type field = {
   is_conditional: bool,
   is_deprecated: bool,
   args: option (list arg),
-  fields: option (list field),
+  fields: option (list field)
 };
 
 let rec to_field data => {
@@ -58,14 +45,16 @@ let rec to_field data => {
   type_: data##_type,
   is_conditional: Js.to_bool data##isConditional,
   is_deprecated: Js.to_bool data##isDeprecated,
-  args: switch (Js.Null_undefined.to_opt data##args) {
+  args:
+    switch (Js.Null_undefined.to_opt data##args) {
     | None => None
     | Some args => Some (args |> Array.to_list |> List.map to_arg)
-  },
-  fields: switch (Js.Null_undefined.to_opt data##fields) {
+    },
+  fields:
+    switch (Js.Null_undefined.to_opt data##fields) {
     | None => None
     | Some fields => Some (fields |> Array.to_list |> List.map to_field)
-  },
+    }
 };
 
 type operation = {
@@ -76,7 +65,7 @@ type operation = {
   source: string,
   operation_id: string,
   variables: option (list variable),
-  fields: list field,
+  fields: list field
 };
 
 let to_operation data => {
@@ -86,23 +75,24 @@ let to_operation data => {
   root_type: data##rootType,
   source: data##source,
   operation_id: data##operationId,
-  variables: switch (Js.Null_undefined.to_opt data##variables) {
+  variables:
+    switch (Js.Null_undefined.to_opt data##variables) {
     | None => None
     | Some fields => Some (fields |> Array.to_list |> List.map to_variable)
-  },
-  fields: data##fields |> Array.to_list |> List.map to_field,
+    },
+  fields: data##fields |> Array.to_list |> List.map to_field
 };
 
 type file = {
   operations: list operation,
   fragments: list fragment,
-  types_used: list type_,
+  types_used: list type_
 };
 
 let to_file data => {
   operations: data##operations |> Array.to_list |> List.map to_operation,
   fragments: [],
-  types_used: data##typesUsed |> Array.to_list |> List.map to_type,
+  types_used: data##typesUsed |> Array.to_list |> List.map to_type
 };
 
 let from_json = to_file;
