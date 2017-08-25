@@ -158,12 +158,28 @@ type data = {
       );
   let variables = def [] operation.variables;
   let res =
-    if (List.length variables == 0) {
-      res
+    if (List.length variables == 0) { 
+      sprintf
+        {|
+%s
+
+let graphql ::component ::fromJs => {
+  let componentJsClass =
+    ReasonReact.wrapReasonForJs
+      ::component
+      (
+        fun (props: Js.t {..}) => {
+          let data: data = to_data props##data;
+          fromJs ::props ::data
+        }
+      );
+  (_graphql query (Js.Obj.empty ()) [@bs]) componentJsClass [@bs]
+};
+|}
+        res;
     } else {
-      let res =
-        sprintf
-          {|
+      sprintf
+        {|
   %s
   %s
 
@@ -189,10 +205,9 @@ type data = {
   };
 
 |}
-          res
-          (query_variables_type variables)
-          (join ",\n" (variables_to_js variables));
-      res
+        res
+        (query_variables_type variables)
+        (join ",\n" (variables_to_js variables));
     };
   sprintf "%s\n};" res
 };
