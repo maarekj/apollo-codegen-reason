@@ -2,8 +2,8 @@
   "name": "apollo-codegen-reason",
   "version": "0.0.1",
   "description": "",
-  "main": "scripts/bin.sh",
-  "bin": "scripts/bin.sh",
+  "main": "lib/output/cli.js",
+  "bin": "lib/output/cli.js",
   "scripts": {
     "start": "bsb -make-world -w",
     "start-webpack": "webpack -w",
@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "bs-jest": "^0.1.0",
-    "bs-platform": "^1.8.2",
+    "bs-platform": "^1.9.1",
     "webpack": "^3.5.5"
   }
 }

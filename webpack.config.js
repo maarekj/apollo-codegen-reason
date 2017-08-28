@@ -1,3 +1,4 @@
+const webpack = require('webpack');
 const path = require('path');
 
 module.exports = {
@@ -9,4 +10,11 @@ module.exports = {
     path: path.join(__dirname, "lib/output"),
     filename: '[name].js',
   },
+  plugins: [
+    new webpack.BannerPlugin({
+      banner: "#!/usr/bin/env node",
+      raw: true,
+      entryOnly: true,
+    }),
+  ],
 };
