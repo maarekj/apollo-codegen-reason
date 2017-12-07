@@ -1,6 +1,6 @@
 {
   "name" : "apollo-codegen-reason",
-  "reason" : {"react-jsx" : 2},
+  "refmt": 3,
   "bs-dependencies": ["bs-jest"],
   "bsc-flags": ["-bs-no-version-header", "-bs-super-errors"],
   "sources": [
