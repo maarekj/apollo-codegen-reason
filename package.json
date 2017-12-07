@@ -1,6 +1,6 @@
 {
   "name": "apollo-codegen-reason",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "",
   "main": "lib/js/src/acr_cli.js",
   "bin": "lib/js/src/acr_cli.js",
