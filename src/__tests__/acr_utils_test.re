@@ -10,9 +10,9 @@ describe(
     test(
       "join",
       () => {
-        let list = ["joseph", "vanessa", "yona", "na\195\169li"];
+        let list = ["joseph", "vanessa", "yona", "naéli"];
         let joined = list |> join(" | ");
-        expect(joined) |> toEqual("joseph | vanessa | yona | na\195\169li")
+        expect(joined) |> toEqual("joseph | vanessa | yona | naéli")
       }
     )
 );
@@ -74,7 +74,7 @@ describe(
   () => {
     test("with list not empty", () => expect(first_or_fail([1, 2, 3])) |> toEqual(1));
     test(
-      "with list not empty",
+      "with list empty",
       () => expect(() => first_or_fail([])) |> toThrowMessage("The list must be not empty")
     )
   }

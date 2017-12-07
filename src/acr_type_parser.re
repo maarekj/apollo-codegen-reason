@@ -142,9 +142,9 @@ let scalar_to_reason = (str) =>
 let to_reason_type = (~initial_optional=false, scalar_to_reason, str) => {
   let rec _to_reason_type = (node: Parser.gqlType) =>
     switch node {
-    | Array(node) => sprintf("list (%s)", _to_reason_type(node))
+    | Array(node) => sprintf("list(%s)", _to_reason_type(node))
     | Scalar(scalar) => scalar_to_reason(scalar)
-    | Optional(node) => sprintf("option (%s)", _to_reason_type(node))
+    | Optional(node) => sprintf("option(%s)", _to_reason_type(node))
     };
   switch (initial_optional, Parser.parse(str)) {
   | (_, None) => raise_malformed_type(str)
@@ -157,32 +157,32 @@ let to_reason_type = (~initial_optional=false, scalar_to_reason, str) => {
 let to_converter = (~initial_optional=false, ~initial_mapper, ~field, ~type_) => {
   let apply_mapper = (field, mapper) =>
     switch mapper {
-    | "(fun x => x)" => field
+    | "((x) => x)" => field
     | mapper => sprintf("(%s) |> %s", field, mapper)
     };
   let mapper_list = (mapper) =>
     switch mapper {
-    | "(fun x => x)" => "Array.to_list"
-    | mapper => sprintf("Array.to_list |> List.map (%s)", mapper)
+    | "((x) => x)" => "Array.to_list"
+    | mapper => sprintf("Array.to_list |> List.map(%s)", mapper)
     };
   let mapper_option = (mapper) =>
     switch mapper {
-    | "(fun x => x)" => "Js.Null_undefined.to_opt"
+    | "((x) => x)" => "Js.Nullable.to_opt"
     | mapper =>
       sprintf(
-        "(fun x => switch (x |> Js.Null_undefined.to_opt) {\n  | None => None\n  | Some data => Some (%s)\n})",
+        "((x) => switch (x |> Js.Nullable.to_opt) {\n  | None => None\n  | Some(data) => Some(%s)\n})",
         apply_mapper("data", mapper)
       )
     };
   let compose_mapper = (mapper1, mapper2) =>
     switch (mapper1, mapper2) {
-    | ("(fun x => x)", "(fun x => x)") => "(fun x => x)"
-    | ("(fun x => x)", map) => map
-    | (map, "(fun x => x)") => map
-    | (mapper1, mapper2) => sprintf("(fun x => x |> (%s) |> (%s))", mapper1, mapper2)
+    | ("((x) => x)", "((x) => x)") => "((x) => x)"
+    | ("((x) => x)", map) => map
+    | (map, "((x) => x)") => map
+    | (mapper1, mapper2) => sprintf("((x) => x |> (%s) |> (%s))", mapper1, mapper2)
     };
   let bool_mapper = compose_mapper(initial_mapper, "Js.to_bool");
-  let _to_converter = (node: Parser.gqlType) =>
+  let to_converter_ = (node: Parser.gqlType) =>
     switch node {
     | Scalar(str) =>
       let mapper = is_bool(str) ? bool_mapper : initial_mapper;
@@ -195,7 +195,7 @@ let to_converter = (~initial_optional=false, ~initial_mapper, ~field, ~type_) =>
       apply_mapper(field, mapper_list(mapper))
     | Optional(Scalar(str)) =>
       let mapper = is_bool(str) ? bool_mapper : initial_mapper;
-      apply_mapper(field, mapper_option(compose_mapper(mapper, "(fun x => x)")))
+      apply_mapper(field, mapper_option(compose_mapper(mapper, "((x) => x)")))
     | Optional(Array(Scalar(str))) =>
       let mapper = is_bool(str) ? bool_mapper : initial_mapper;
       apply_mapper(field, mapper_option(mapper_list(mapper)))
@@ -206,27 +206,27 @@ let to_converter = (~initial_optional=false, ~initial_mapper, ~field, ~type_) =>
     };
   switch (initial_optional, Parser.parse(type_)) {
   | (_, None) => raise_malformed_type(type_)
-  | (false, Some(node)) => _to_converter(node)
-  | (true, Some(Optional(node))) => _to_converter(Optional(node))
-  | (true, Some(node)) => _to_converter(Optional(node))
+  | (false, Some(node)) => to_converter_(node)
+  | (true, Some(Optional(node))) => to_converter_(Optional(node))
+  | (true, Some(node)) => to_converter_(Optional(node))
   }
 };
 
 let to_js_converter = (~field, ~type_) => {
-  let _to_js_converter = (node: Parser.gqlType) =>
+  let to_js_converter_ = (node: Parser.gqlType) =>
     switch node {
     | Scalar(b) when is_bool(b) => sprintf("(%s) |> Js.Boolean.to_js_boolean", field)
     | Scalar(_) => field
     | Optional(Scalar(b)) when is_bool(b) || b == "NullableBoolean" =>
       sprintf(
-        "switch (%s) {\n  | None => Js.null\n  | Some b => Some (b |> Js.Boolean.to_js_boolean) |> Js.Null.from_opt\n}",
+        "switch (%s) {\n  | None => Js.null\n  | Some(b) => Some(b |> Js.Boolean.to_js_boolean) |> Js.Nullable.from_opt\n}",
         field
       )
-    | Optional(Scalar(_)) => sprintf("(%s) |> Js.Null.from_opt", field)
+    | Optional(Scalar(_)) => sprintf("(%s) |> Js.Nullable.from_opt", field)
     | _ => raise(NotYetSupported)
     };
   switch (Parser.parse(type_)) {
   | None => raise_malformed_type(type_)
-  | Some(node) => _to_js_converter(node)
+  | Some(node) => to_js_converter_(node)
   }
 };

@@ -62,21 +62,21 @@ describe(
       "with scalar_to_reason",
       (_) => {
         let trt = to_reason_type(scalar_to_reason);
-        test("NullableBoolean", (_) => expect(trt("NullableBoolean")) == "option (bool)");
+        test("NullableBoolean", (_) => expect(trt("NullableBoolean")) == "option(bool)");
         test(
           "[NullableBoolean]!",
-          (_) => expect(trt("[NullableBoolean]!")) == "list (option (bool))"
+          (_) => expect(trt("[NullableBoolean]!")) == "list(option(bool))"
         );
-        test("[String]!", (_) => expect(trt("[String]!")) == "list (option (string))");
-        test("[String]", (_) => expect(trt("[String]")) == "option (list (option (string)))");
-        test("String", (_) => expect(trt("String")) == "option (string)");
+        test("[String]!", (_) => expect(trt("[String]!")) == "list(option(string))");
+        test("[String]", (_) => expect(trt("[String]")) == "option(list(option(string)))");
+        test("String", (_) => expect(trt("String")) == "option(string)");
         test("String!", (_) => expect(trt("String!")) == "string");
-        test("[String!]!", (_) => expect(trt("[String!]!")) == "list (string)");
+        test("[String!]!", (_) => expect(trt("[String!]!")) == "list(string)");
         test(
           "[[String]]",
-          (_) => expect(trt("[[String]]")) == "option (list (option (list (option (string)))))"
+          (_) => expect(trt("[[String]]")) == "option(list(option(list(option(string)))))"
         );
-        test("[[String!]!]!", (_) => expect(trt("[[String!]!]!")) == "list (list (string))");
+        test("[[String!]!]!", (_) => expect(trt("[[String!]!]!")) == "list(list(string))");
         test(
           "fail with an unknown type",
           (_) =>
@@ -127,16 +127,16 @@ describe(
       "with custom scalar",
       (_) => {
         let trt = to_reason_type((_) => "my_type");
-        test("[String]!", (_) => expect(trt("[String]!")) == "list (option (my_type))");
-        test("[String]", (_) => expect(trt("[String]")) == "option (list (option (my_type)))");
-        test("String", (_) => expect(trt("String")) == "option (my_type)");
+        test("[String]!", (_) => expect(trt("[String]!")) == "list(option(my_type))");
+        test("[String]", (_) => expect(trt("[String]")) == "option(list(option(my_type)))");
+        test("String", (_) => expect(trt("String")) == "option(my_type)");
         test("String!", (_) => expect(trt("String!")) == "my_type");
-        test("[String!]!", (_) => expect(trt("[String!]!")) == "list (my_type)");
+        test("[String!]!", (_) => expect(trt("[String!]!")) == "list(my_type)");
         test(
           "[[String]]",
-          (_) => expect(trt("[[String]]")) == "option (list (option (list (option (my_type)))))"
+          (_) => expect(trt("[[String]]")) == "option(list(option(list(option(my_type)))))"
         );
-        test("[[String!]!]!", (_) => expect(trt("[[String!]!]!")) == "list (list (my_type))");
+        test("[[String!]!]!", (_) => expect(trt("[[String!]!]!")) == "list(list(my_type))");
         test(
           "fail with an malformed type",
           (_) =>
@@ -165,18 +165,18 @@ describe(
       "with initial_optional = true",
       (_) => {
         let trt = to_reason_type(~initial_optional=true, scalar_to_reason);
-        test("[String]!", (_) => expect(trt("[String]!")) == "option (list (option (string)))");
-        test("[String]", (_) => expect(trt("[String]")) == "option (list (option (string)))");
-        test("String", (_) => expect(trt("String")) == "option (string)");
-        test("String!", (_) => expect(trt("String!")) == "option (string)");
-        test("[String!]!", (_) => expect(trt("[String!]!")) == "option (list (string))");
+        test("[String]!", (_) => expect(trt("[String]!")) == "option(list(option(string)))");
+        test("[String]", (_) => expect(trt("[String]")) == "option(list(option(string)))");
+        test("String", (_) => expect(trt("String")) == "option(string)");
+        test("String!", (_) => expect(trt("String!")) == "option(string)");
+        test("[String!]!", (_) => expect(trt("[String!]!")) == "option(list(string))");
         test(
           "[[String]]",
-          (_) => expect(trt("[[String]]")) == "option (list (option (list (option (string)))))"
+          (_) => expect(trt("[[String]]")) == "option(list(option(list(option(string)))))"
         );
         test(
           "[[String!]!]!",
-          (_) => expect(trt("[[String!]!]!")) == "option (list (list (string)))"
+          (_) => expect(trt("[[String!]!]!")) == "option(list(list(string)))"
         )
       }
     )
@@ -193,7 +193,7 @@ describe(
       to_converter(
         ~initial_optional=false,
         ~field="data##field",
-        ~initial_mapper="(fun x => x)",
+        ~initial_mapper="((x) => x)",
         ~type_
       );
     test("Bool!", (_) => expect(toc("Bool!")) == "(data##field) |> Js.to_bool");
@@ -201,40 +201,40 @@ describe(
       "Bool",
       (_) =>
         expect(toc("Bool"))
-        == "(data##field) |> (fun x => switch (x |> Js.Null_undefined.to_opt) {\n  | None => None\n  | Some data => Some ((data) |> Js.to_bool)\n})"
+        == "(data##field) |> ((x) => switch (x |> Js.Nullable.to_opt) {\n  | None => None\n  | Some(data) => Some((data) |> Js.to_bool)\n})"
     );
     test("String!", (_) => expect(toc("String!")) == "data##field");
-    test("String", (_) => expect(toc("String")) == "(data##field) |> Js.Null_undefined.to_opt");
+    test("String", (_) => expect(toc("String")) == "(data##field) |> Js.Nullable.to_opt");
     test("[String!]!", (_) => expect(toc("[String!]!")) == "(data##field) |> Array.to_list");
     test(
       "[String!]",
       (_) =>
         expect(toc("[String!]"))
-        == "(data##field) |> (fun x => switch (x |> Js.Null_undefined.to_opt) {\n  | None => None\n  | Some data => Some ((data) |> Array.to_list)\n})"
+        == "(data##field) |> ((x) => switch (x |> Js.Nullable.to_opt) {\n  | None => None\n  | Some(data) => Some((data) |> Array.to_list)\n})"
     );
     test(
       "[String]!",
       (_) =>
         expect(toc("[String]!"))
-        == "(data##field) |> Array.to_list |> List.map (Js.Null_undefined.to_opt)"
+        == "(data##field) |> Array.to_list |> List.map(Js.Nullable.to_opt)"
     );
     test(
       "[String]",
       (_) =>
         expect(toc("[String]"))
-        == "(data##field) |> (fun x => switch (x |> Js.Null_undefined.to_opt) {\n  | None => None\n  | Some data => Some ((data) |> Array.to_list |> List.map (Js.Null_undefined.to_opt))\n})"
+        == "(data##field) |> ((x) => switch (x |> Js.Nullable.to_opt) {\n  | None => None\n  | Some(data) => Some((data) |> Array.to_list |> List.map(Js.Nullable.to_opt))\n})"
     );
     test(
       "[Bool]",
       (_) =>
         expect(toc("[Bool]"))
-        == "(data##field) |> (fun x => switch (x |> Js.Null_undefined.to_opt) {\n  | None => None\n  | Some data => Some ((data) |> Array.to_list |> List.map ((fun x => switch (x |> Js.Null_undefined.to_opt) {\n  | None => None\n  | Some data => Some ((data) |> Js.to_bool)\n})))\n})"
+        == "(data##field) |> ((x) => switch (x |> Js.Nullable.to_opt) {\n  | None => None\n  | Some(data) => Some((data) |> Array.to_list |> List.map(((x) => switch (x |> Js.Nullable.to_opt) {\n  | None => None\n  | Some(data) => Some((data) |> Js.to_bool)\n})))\n})"
     );
     test(
       "[Bool]!",
       (_) =>
         expect(toc("[Bool]!"))
-        == "(data##field) |> Array.to_list |> List.map ((fun x => switch (x |> Js.Null_undefined.to_opt) {\n  | None => None\n  | Some data => Some ((data) |> Js.to_bool)\n}))"
+        == "(data##field) |> Array.to_list |> List.map(((x) => switch (x |> Js.Nullable.to_opt) {\n  | None => None\n  | Some(data) => Some((data) |> Js.to_bool)\n}))"
     )
   }
 );
@@ -251,15 +251,15 @@ describe(
       "Bool",
       (_) =>
         expect(tojsc("Bool"))
-        == "switch (data.field) {\n  | None => Js.null\n  | Some b => Some (b |> Js.Boolean.to_js_boolean) |> Js.Null.from_opt\n}"
+        == "switch (data.field) {\n  | None => Js.null\n  | Some(b) => Some(b |> Js.Boolean.to_js_boolean) |> Js.Nullable.from_opt\n}"
     );
     test(
       "NullableBoolean",
       (_) =>
         expect(tojsc("NullableBoolean"))
-        == "switch (data.field) {\n  | None => Js.null\n  | Some b => Some (b |> Js.Boolean.to_js_boolean) |> Js.Null.from_opt\n}"
+        == "switch (data.field) {\n  | None => Js.null\n  | Some(b) => Some(b |> Js.Boolean.to_js_boolean) |> Js.Nullable.from_opt\n}"
     );
     test("String!", (_) => expect(tojsc("String!")) == "data.field");
-    test("String", (_) => expect(tojsc("String")) == "(data.field) |> Js.Null.from_opt")
+    test("String", (_) => expect(tojsc("String")) == "(data.field) |> Js.Nullable.from_opt")
   }
 );

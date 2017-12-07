@@ -56,7 +56,7 @@ let convert_to_reason_composed_fields = (parent_name, field, sub_fields) => {
                f.response_name,
                Type_parser.to_converter(
                  ~initial_optional=false,
-                 ~initial_mapper="(fun x => x)",
+                 ~initial_mapper="((x) => x)",
                  ~field="data##" ++ f.response_name,
                  ~type_=f.type_
                )
@@ -76,7 +76,7 @@ let convert_to_reason_composed_fields = (parent_name, field, sub_fields) => {
            }
        );
   sprintf(
-    "let to_%s%s (data: Js.t {..}): %s%s => {\n%s\n};",
+    "let to_%s%s = (data: Js.t({..})): %s%s => {\n%s\n};",
     parent_name,
     field.response_name,
     parent_name,
@@ -131,12 +131,12 @@ let generate_operation = (operation: operation) => {
       {eos|
 module %s = {
 type gql;
-external gql : string => gql = "graphql-tag" [@@bs.module];
-let query = gql {| %s |};
+[@bs.module] external gql : string => gql = "graphql-tag";
+let query = gql({| %s |});
 
-type hoc = (ReasonReact.reactClass => ReasonReact.reactClass) [@bs];
-type graphql 'a = (gql => Js.t 'a => hoc) [@bs];
-external _graphql: graphql 'a = "graphql" [@@bs.module "react-apollo"];
+type hoc = [@bs] (ReasonReact.reactClass => ReasonReact.reactClass);
+type graphql('a) = [@bs] ((gql, Js.t('a)) => hoc);
+[@bs.module "react-apollo"] external _graphql : graphql('a) = "graphql";
 
 |eos},
       capitalize(operation.operation_name),
@@ -152,7 +152,7 @@ external _graphql: graphql 'a = "graphql" [@@bs.module "react-apollo"];
 
 type data = {
   loading: bool,
-  error: option Js.Exn.t,
+  error: option(Js.Exn.t),
   network_status: React_apollo.networkStatus,
   refetch: unit => unit,
   %s: %s,
@@ -172,7 +172,16 @@ type data = {
     );
   let res =
     sprintf(
-      "\n%s\n\nlet to_data (data: Js.t {..}): data => {\n  loading: Js.to_bool data##loading,\n  error: Js.Null_undefined.to_opt data##error,\n  network_status: React_apollo.to_network_status data##networkStatus,\n  %s: %s,\n  refetch: data##refetch,\n};\n",
+      {|
+      %s
+      let to_data = (data: Js.t({..})): data => {
+        loading: Js.to_bool(data##loading),
+        error: Js.Null_undefined.to_opt(data##error),
+        network_status: React_apollo.to_network_status(data##networkStatus),
+        %s: %s,
+        refetch: data##refetch,
+      };
+      |},
       res,
       root_field.response_name,
       Type_parser.to_converter(
@@ -189,17 +198,16 @@ type data = {
         {|
 %s
 
-let graphql ::component ::fromJs => {
+let graphql = (~component, ~fromJs) => {
   let componentJsClass =
-    ReasonReact.wrapReasonForJs
-      ::component
-      (
-        fun (props: Js.t {..}) => {
-          let data: data = to_data props##data;
-          fromJs ::props ::data
-        }
-      );
-  (_graphql query (Js.Obj.empty ()) [@bs]) componentJsClass [@bs]
+    ReasonReact.wrapReasonForJs(
+      ~component,
+      (props: Js.t({..})) => {
+        let data: data = to_data(props##data);
+        fromJs(~props, ~data)
+      }
+    );
+  [@bs] ([@bs] _graphql(query, Js.Obj.empty()))(componentJsClass)
 };
 |},
         res
@@ -210,27 +218,28 @@ let graphql ::component ::fromJs => {
   %s
   %s
 
-  let graphql ::component ::fromJs ::variables => {
-    let componentJsClass = ReasonReact.wrapReasonForJs
-      ::component
-      (fun (props: Js.t {..}) => {
-        let data: data = to_data props##data;
-        fromJs ::props ::data;
-      });
-
-    let options = {
-      "options": (fun jsProps => {
-        let vars = variables jsProps;
-        {
-          "variables": {
-            %s
-          }
+  
+  let graphql = (~component, ~fromJs, ~variables) => {
+    let componentJsClass =
+      ReasonReact.wrapReasonForJs(
+        ~component,
+        (props: Js.t({..})) => {
+          let data: data = to_data(props##data);
+          fromJs(~props, ~data)
         }
-      })[@bs]
+      );
+    let options = {
+      "options":
+        [@bs]
+        (
+          (jsProps) => {
+            let vars = variables(jsProps);
+            {"variables": {%s}}
+          }
+        )
     };
-    ((_graphql query options [@bs]) componentJsClass [@bs])
+    [@bs] ([@bs] _graphql(query, options))(componentJsClass)
   };
-
 |},
         res,
         query_variables_type(variables),
