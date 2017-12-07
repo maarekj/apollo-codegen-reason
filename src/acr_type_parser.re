@@ -219,7 +219,7 @@ let to_js_converter = (~field, ~type_) => {
     | Scalar(_) => field
     | Optional(Scalar(b)) when is_bool(b) || b == "NullableBoolean" =>
       sprintf(
-        "switch (%s) {\n  | None => Js.null\n  | Some(b) => Some(b |> Js.Boolean.to_js_boolean) |> Js.Nullable.from_opt\n}",
+        "switch (%s) {\n  | None => Js.Nullable.null\n  | Some(b) => Some(b |> Js.Boolean.to_js_boolean) |> Js.Nullable.from_opt\n}",
         field
       )
     | Optional(Scalar(_)) => sprintf("(%s) |> Js.Nullable.from_opt", field)

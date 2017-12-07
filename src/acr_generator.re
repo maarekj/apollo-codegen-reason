@@ -176,7 +176,7 @@ type data = {
       %s
       let to_data = (data: Js.t({..})): data => {
         loading: Js.to_bool(data##loading),
-        error: Js.Null_undefined.to_opt(data##error),
+        error: Js.Nullable.to_opt(data##error),
         network_status: React_apollo.to_network_status(data##networkStatus),
         %s: %s,
         refetch: data##refetch,

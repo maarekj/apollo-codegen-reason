@@ -251,13 +251,13 @@ describe(
       "Bool",
       (_) =>
         expect(tojsc("Bool"))
-        == "switch (data.field) {\n  | None => Js.null\n  | Some(b) => Some(b |> Js.Boolean.to_js_boolean) |> Js.Nullable.from_opt\n}"
+        == "switch (data.field) {\n  | None => Js.Nullable.null\n  | Some(b) => Some(b |> Js.Boolean.to_js_boolean) |> Js.Nullable.from_opt\n}"
     );
     test(
       "NullableBoolean",
       (_) =>
         expect(tojsc("NullableBoolean"))
-        == "switch (data.field) {\n  | None => Js.null\n  | Some(b) => Some(b |> Js.Boolean.to_js_boolean) |> Js.Nullable.from_opt\n}"
+        == "switch (data.field) {\n  | None => Js.Nullable.null\n  | Some(b) => Some(b |> Js.Boolean.to_js_boolean) |> Js.Nullable.from_opt\n}"
     );
     test("String!", (_) => expect(tojsc("String!")) == "data.field");
     test("String", (_) => expect(tojsc("String")) == "(data.field) |> Js.Nullable.from_opt")
