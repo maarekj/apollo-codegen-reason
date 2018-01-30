@@ -212,7 +212,7 @@ let to_converter = (~initial_optional=false, ~initial_mapper, ~field, ~type_) =>
   }
 };
 
-let to_js_converter = (~field, ~type_) => {
+let to_js_converter = (~field, ~type_, ~nullType, ()) => {
   let to_js_converter_ = (node: Parser.gqlType) =>
     switch node {
     | Scalar(b) when is_bool(b) => sprintf("(%s) |> Js.Boolean.to_js_boolean", field)
@@ -222,7 +222,7 @@ let to_js_converter = (~field, ~type_) => {
         "switch (%s) {\n  | None => Js.Nullable.null\n  | Some(b) => Some(b |> Js.Boolean.to_js_boolean) |> Js.Nullable.from_opt\n}",
         field
       )
-    | Optional(Scalar(_)) => sprintf("(%s) |> Js.Nullable.from_opt", field)
+    | Optional(Scalar(_)) => sprintf("(%s) |> Js.%s.from_opt", field, nullType)
     | _ => raise(NotYetSupported)
     };
   switch (Parser.parse(type_)) {

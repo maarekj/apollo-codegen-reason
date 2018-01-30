@@ -120,7 +120,9 @@ let variables_to_js = (variables: list(variable)) =>
            variable.name,
            Type_parser.to_js_converter(
              ~field=sprintf("vars.%s", variable.name),
-             ~type_=variable.type_
+             ~type_=variable.type_,
+             ~nullType="Null",
+             ()
            )
          )
      );
@@ -218,7 +220,7 @@ let graphql = (~component, ~fromJs) => {
   %s
   %s
 
-  
+
   let graphql = (~component, ~fromJs, ~variables) => {
     let componentJsClass =
       ReasonReact.wrapReasonForJs(

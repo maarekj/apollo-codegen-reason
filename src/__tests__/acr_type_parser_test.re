@@ -245,7 +245,7 @@ describe(
     open Expect;
     open! Expect.Operators;
     open Acr.Type_parser;
-    let tojsc = (type_) => to_js_converter(~field="data.field", ~type_);
+    let tojsc = (~nullType="Nullable", type_) => to_js_converter(~field="data.field", ~type_, ~nullType, ());
     test("Bool!", (_) => expect(tojsc("Bool!")) == "(data.field) |> Js.Boolean.to_js_boolean");
     test(
       "Bool",
@@ -260,6 +260,7 @@ describe(
         == "switch (data.field) {\n  | None => Js.Nullable.null\n  | Some(b) => Some(b |> Js.Boolean.to_js_boolean) |> Js.Nullable.from_opt\n}"
     );
     test("String!", (_) => expect(tojsc("String!")) == "data.field");
-    test("String", (_) => expect(tojsc("String")) == "(data.field) |> Js.Nullable.from_opt")
+    test("String", (_) => expect(tojsc("String")) == "(data.field) |> Js.Nullable.from_opt");
+    test("String", (_) => expect(tojsc(~nullType="Null", "String")) == "(data.field) |> Js.Null.from_opt")
   }
 );
